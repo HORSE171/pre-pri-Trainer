@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 import random
 
 app = Flask(__name__)
-
+app.secret_key = 'd_bil1234567890'
 filename = "wordslova"
 words = []
 questions = []
@@ -51,16 +51,19 @@ def teoriya():
 def quiz():
     global questdict
     number = request.form["qnum"]
-    questdict = generate_questions(int(number))
-    return render_template('main.html', questions=questdict)
+    session['questdict'] = generate_questions(int(number))
+    return render_template('main.html', questions=session['questdict'])
 
 
 @app.route('/results', methods=['POST'])
 def check_answers():
     results = {}
     correct = 0
+    questdict = session['questdict']
+    print(questdict)
     for word in request.form:  # цикл по вопросам; входящая структура данных: {"вопрос":"буква которую ответил чел"}   requst.form ={'пр...любезный': 'е', 'пр...рвать': 'е', 'пр...мудрость': 'е', 'пр...валировать': 'е'}
         answered = request.form[word]  # сохраняем в вспомогательную переменную ответ(букву) на вопрос
+
         if questdict[word] == answered:  # сравнение буквы, которую ответил чел с правильной буквой в словаре вопросов
             correct = correct + 1  # если они равны то прибавляем 1 к переменной количества правильных ответов
             word = word.replace("...", questdict[word])
